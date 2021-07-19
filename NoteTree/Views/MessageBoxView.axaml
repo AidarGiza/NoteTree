@@ -1,0 +1,26 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:NoteTree.ViewModels;assembly=NoteTree"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="200"
+        x:Class="NoteTree.Views.MessageBoxView"
+        Title="{Binding Caption}"
+        WindowStartupLocation="CenterOwner" 
+        SizeToContent="WidthAndHeight"
+        CanResize="False" FontFamily="Arial">
+  <Design.DataContext>
+    <vm:MessageBoxViewModel/>
+  </Design.DataContext>
+  <Grid ColumnDefinitions="200*,Auto,*" RowDefinitions="*,Auto">
+    <Image Margin="25,0,0,0" Grid.Column="0" Grid.Row="0" Source="{Binding Icon}" Width="48" Height="48" HorizontalAlignment="Right"/>
+    <TextBlock  Margin="20" Grid.Row="0" Grid.Column="1" Text="{Binding Message}"/>
+    <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="LightGray">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Width="70" IsVisible="{Binding IsFirstButtonVisible}" Command="{Binding FirstButtonClick}" Margin="5"  Content="{Binding FirstButtonText}"/>
+        <Button Width="70" IsVisible="{Binding IsSecondButtonVisible}" Command="{Binding SecondButtonClick}" Margin="5" Content="{Binding SecondButtonText}"/>
+        <Button Width="70" IsVisible="{Binding IsThirdButtonVisible}" Command="{Binding ThirdButtonClick}" Margin="5" Content="{Binding ThirdButtonText}"/>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

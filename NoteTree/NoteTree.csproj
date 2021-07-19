@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Remove="Assets\icons\icon_folder16.png" />
+    <AvaloniaResource Remove="Assets\icons\icon_folder_open16.png" />
+    <AvaloniaResource Remove="Assets\icons\icon_note16.png" />
+    <AvaloniaResource Remove="Assets\images\mb_error.png" />
+    <AvaloniaResource Remove="Assets\images\mb_exclamation.png" />
+    <AvaloniaResource Remove="Assets\images\mb_information.png" />
+    <AvaloniaResource Remove="Assets\images\mb_question.png" />
+    <AvaloniaResource Remove="Assets\images\mb_warning.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Assets\icons\icon_folder16.png" />
+    <None Remove="Assets\icons\icon_folder_open16.png" />
+    <None Remove="Assets\icons\icon_note16.png" />
+    <None Remove="Assets\images\mb_error.png" />
+    <None Remove="Assets\images\mb_exclamation.png" />
+    <None Remove="Assets\images\mb_information.png" />
+    <None Remove="Assets\images\mb_question.png" />
+    <None Remove="Assets\images\mb_warning.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\icons\icon_folder16.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\icons\icon_folder_open16.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\icons\icon_note16.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\images\mb_error.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\images\mb_exclamation.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\images\mb_information.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\images\mb_question.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Assets\images\mb_warning.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.9.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.9.11" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.11" />
+    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.2" />
+  </ItemGroup>
+</Project>

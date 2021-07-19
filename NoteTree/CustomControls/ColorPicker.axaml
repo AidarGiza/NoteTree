@@ -1,0 +1,54 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:NoteTree.Converters;assembly=NoteTree"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="NoteTree.CustomControls.ColorPicker">
+  <UserControl.Resources>
+    <converters:ArgbColorToBrushConverter x:Key="ArgbColorToBrushConverter"/>
+    <VisualBrush x:Key="ColorCheckerBoard" TileMode="Tile" Stretch="None" AlignmentX="Left" AlignmentY="Top" SourceRect="0,0,20,20" DestinationRect="0,0,20,20">
+      <VisualBrush.Visual>
+        <StackPanel Orientation="Horizontal">
+          <StackPanel Orientation="Vertical">
+            <Rectangle Width="10" Height="10" Fill="DarkGray"/>
+            <Rectangle Width="10" Height="10" Fill="LightGray"/>
+          </StackPanel>
+          <StackPanel Orientation="Vertical">
+            <Rectangle Width="10" Height="10" Fill="LightGray"/>
+            <Rectangle Width="10" Height="10" Fill="DarkGray"/>
+          </StackPanel>
+        </StackPanel>
+      </VisualBrush.Visual>
+    </VisualBrush>
+  </UserControl.Resources>
+  <Grid RowDefinitions="20,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,60,*">
+    <Border Background="{DynamicResource ColorCheckerBoard}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"/>
+    <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+      <Border.Background>
+        <MultiBinding Mode="OneWay" Converter="{StaticResource ArgbColorToBrushConverter}">
+          <Binding Path="A"/>
+          <Binding Path="R"/>
+          <Binding Path="G"/>
+          <Binding Path="B"/>
+        </MultiBinding>
+      </Border.Background>
+    </Border>
+
+    <TextBlock Text="A" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
+    <TextBox Text="{Binding A, Mode=TwoWay}" Classes="center" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Margin="2"/>
+    <Slider Value="{Binding A, Mode=TwoWay}" Minimum="0" Maximum="255" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center"/>
+
+    <TextBlock Text="R" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
+    <TextBox Text="{Binding R, Mode=TwoWay}" Classes="center" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Margin="2"/>
+    <Slider Value="{Binding R, Mode=TwoWay}" Minimum="0" Maximum="255" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center"/>
+
+    <TextBlock Text="G" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
+    <TextBox Text="{Binding G, Mode=TwoWay}" Classes="center" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" Margin="2"/>
+    <Slider Value="{Binding G, Mode=TwoWay}" Minimum="0" Maximum="255" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center"/>
+
+    <TextBlock Text="B" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="5"/>
+    <TextBox Text="{Binding B, Mode=TwoWay}" Classes="center" Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" Margin="2"/>
+    <Slider Value="{Binding B, Mode=TwoWay}" Minimum="0" Maximum="255" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center"/>
+  </Grid>
+</UserControl>

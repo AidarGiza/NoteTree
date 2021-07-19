@@ -1,0 +1,144 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:NoteTree.ViewModels;assembly=NoteTree"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:NoteTypesModels="clr-namespace:NoteTree.Models;assembly=NoteTree"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+        xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+        xmlns:NoteTypesViews="clr-namespace:NoteTree.Views.NoteTypesViews;assembly=NoteTree"
+        xmlns:Converters="clr-namespace:NoteTree.Converters;assembly=NoteTree"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        MinWidth="1200" MinHeight="800" Width="1200" Height="800"
+        x:Class="NoteTree.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="NoteTree">
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+  
+  <Window.Resources>
+    <Converters:PathToImageConverter x:Key="pathToImageConverter"/>
+    <Converters:ArgbColorToBrushConverter x:Key="ArgbColorToBrushConverter"/>
+  </Window.Resources>
+  
+  <Window.DataTemplates>
+    <DataTemplate DataType="NoteTypesModels:TextNoteModel">
+      <NoteTypesViews:TextNoteView/>
+    </DataTemplate>
+    <DataTemplate DataType="NoteTypesModels:ExtendedTextNoteModel">
+      <NoteTypesViews:ExtendedTextNoteView/>
+    </DataTemplate>
+    <DataTemplate DataType="NoteTypesModels:CornellNoteModel">
+      <NoteTypesViews:CornellNoteView/>
+    </DataTemplate>
+  </Window.DataTemplates>
+  
+  <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,*">
+    <Menu Grid.Row="0">
+      <MenuItem Header="Файл">
+        <MenuItem Header="Новый">
+          <MenuItem Header="Текстовый" Command="{Binding NewTextNote}"/>
+          <MenuItem Header="Расширенный" Command="{Binding NewExtendedTextNote}" IsEnabled="False"/>
+          <MenuItem Header="Метод Корнелла" Command="{Binding NewCornellNote}" IsEnabled="False"/>
+        </MenuItem>
+        <MenuItem Header="Корневая директория" Command="{Binding SelectRoot}"/>
+        <MenuItem Header="Выход" Command="{Binding Exit}"/>
+      </MenuItem>
+    </Menu>
+
+    <WrapPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+      <Button Content="Сохранить" Margin="4,2,2,2" Command="{Binding SaveSelected}"/>
+    </WrapPanel> 
+    
+    <Panel Grid.Row="2" Grid.Column="0">
+      <Grid RowDefinitions="Auto, *, Auto, Auto">
+        <TextBox Grid.Row="0" Margin="4,4,2,2" MinWidth="200" Watermark="Поиск"/>
+        <TreeView Grid.Row="1" Margin="4,2,2,2" Name="ElementsTree" MinHeight="200" Items="{Binding TreeElements, Mode=TwoWay}" SelectedItem="{Binding SelectedTreeItem}">
+          <TreeView.ContextMenu>
+            <ContextMenu IsVisible="{Binding ShowContextMenu}">
+              <MenuItem Header="Добавить" IsVisible="{Binding IsAddCommandsVisible}">
+                <MenuItem Header="Папка" Command="{Binding AddFolder}"/>
+                <MenuItem Header="Заметка">
+                  <MenuItem Header="Текстовый" Command="{Binding NewTextNote}"/>
+                  <MenuItem Header="Расширенный" IsEnabled="False"/>
+                  <MenuItem Header="Метод Корнелла" IsEnabled="False"/>
+                </MenuItem>
+              </MenuItem>
+              <MenuItem Header="Удалить" Command="{Binding DeleteSelected}"/>
+            </ContextMenu>
+          </TreeView.ContextMenu>
+          
+          <TreeView.Styles>
+            <Style Selector="TreeViewItem" >
+              <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+            </Style>
+          </TreeView.Styles>
+
+          <TreeView.DataTemplates>
+            <TreeDataTemplate DataType="NoteTypesModels:TreeElementModel" ItemsSource="{Binding Children}">
+              <StackPanel Orientation="Horizontal" >
+                <Image Source="{Binding IconPath, Converter={StaticResource pathToImageConverter}}" Margin="0,0,2,0"/>
+                <TextBlock Text="{Binding Label}"/>
+              </StackPanel>
+            </TreeDataTemplate>
+          </TreeView.DataTemplates>
+        </TreeView>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+          <Button Content="Создать главный" Command="{Binding CreateMainTag}" Margin="4,2,2,2"/>
+          <Button Content="Добавить подтег" Command="{Binding AddTag}" Margin="2,2,2,2"/>
+        </StackPanel>
+        
+        <TreeView Grid.Row="3" Margin="4,2,2,4" Name="TagsTree" MinHeight="250" Items="{Binding Tags}" SelectedItem="{Binding SelectedTag}">
+          <TreeView.ContextMenu>
+            <ContextMenu IsVisible="{Binding ShowTagsContextMenu}">
+              <MenuItem Header="Добавить" IsVisible="{Binding IsAddTagCommandsVisible}" Command="{Binding AddTag}"/>
+              <MenuItem Header="Изменить" IsVisible="{Binding IsAddTagCommandsVisible}" Command="{Binding EditSelectedTag}"/>
+              <MenuItem Header="Удалить" Command="{Binding DelSelectedTag}"/>
+            </ContextMenu>
+          </TreeView.ContextMenu>
+          
+          <TreeView.Styles>
+            <Style Selector="TreeViewItem" >
+              <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+            </Style>
+          </TreeView.Styles>
+
+          <TreeView.DataTemplates>
+            <TreeDataTemplate DataType="NoteTypesModels:TagModel" ItemsSource="{Binding Children}">
+              <Grid ColumnDefinitions="Auto,*,Auto" >
+                <Border Grid.Column="0" CornerRadius="10" Padding="8,0">
+                  <Border.Background>
+                    <MultiBinding Mode="OneWay" Converter="{StaticResource ArgbColorToBrushConverter}">
+                      <Binding Path="BackgroundColor.A"/>
+                      <Binding Path="BackgroundColor.R"/>
+                      <Binding Path="BackgroundColor.G"/>
+                      <Binding Path="BackgroundColor.B"/>
+                    </MultiBinding>
+                  </Border.Background>
+                  
+                  <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="10" VerticalAlignment="Center">
+                    <TextBlock.Foreground>
+                      <MultiBinding Mode="OneWay" Converter="{StaticResource ArgbColorToBrushConverter}">
+                        <Binding Path="FontColor.A"/>
+                        <Binding Path="FontColor.R"/>
+                        <Binding Path="FontColor.G"/>
+                        <Binding Path="FontColor.B"/>
+                      </MultiBinding>
+                    </TextBlock.Foreground>
+                  </TextBlock>
+                </Border>
+                
+                <Button Grid.Column="2" Content=">" FontSize="10" Padding="5,-3" Command="{Binding $parent[Window].DataContext.AddTagToNote}" CommandParameter="{Binding}" HorizontalAlignment="Right" Height="16"/>
+              </Grid>
+            </TreeDataTemplate>
+          </TreeView.DataTemplates>
+        </TreeView>
+      </Grid>
+    </Panel>
+    
+    <ContentControl Grid.Row="2" Grid.Column="1" Content="{Binding SelectedNote, Mode=TwoWay}"/>
+  </Grid>
+
+</Window>
