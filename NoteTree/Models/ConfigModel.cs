@@ -32,6 +32,7 @@ namespace NoteTree.Models
             }
         }
 
+
         public static ConfigModel LoadConfig()
         {
             try
