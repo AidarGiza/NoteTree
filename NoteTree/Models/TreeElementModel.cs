@@ -1,13 +1,16 @@
 ﻿using DynamicData;
+using NoteTree.Interfaces;
 using NoteTree.Services;
 using ReactiveUI;
-using System.Collections.ObjectModel;
+using System;
 using System.Linq;
 
 namespace NoteTree.Models
 {
-    public class TreeElementModel : ReactiveObject
+    public class TreeElementModel : RootElementModel, IDisposable, ITreeElement
     {
+        private bool disposed = false;
+
         public bool IsExpanded
         {
             get => isExpanded;
@@ -15,11 +18,11 @@ namespace NoteTree.Models
             {
                 if (value)
                 {
-                    foreach (var child in Children.Where(e => e.Type == TreeElementTypeEnum.Folder))
+                    foreach (var child in Children.Where(e => (e as ITreeElement).Type == TreeElementTypeEnum.Folder))
                     {
                         if (child.Children.Count == 0)
                         {
-                            child.Children.AddRange(DirectoriesManager.GetDirectories(child));
+                            child.Children.AddRange(DirectoriesManager.GetDirectories(child as IFileStructureElement));
                         }
                     }
                 }
@@ -31,7 +34,8 @@ namespace NoteTree.Models
 
         public TreeElementTypeEnum Type { get; set; }
 
-        public string Path { get; set; }
+        public string Lable => Name;
+
 
         public string IconPath
         {
@@ -47,11 +51,31 @@ namespace NoteTree.Models
             }
         }
 
-        public string Label { get; set; }
+        public IParentElement<ITreeElement> Parent { get; set; }
 
-        public ObservableCollection<TreeElementModel> Children { get; set; }
+        public void Dispose()
+        {
+            // освобождаем неуправляемые ресурсы
+            Dispose(true);
+            // подавляем финализацию
+            GC.SuppressFinalize(this);
+        }
 
-        public TreeElementModel Parent { get; set; }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed) return;
+            if (disposing)
+            {
+                // Освобождаем управляемые ресурсы
+            }
+            // освобождаем неуправляемые объекты
+            disposed = true;
+        }
 
+        // Деструктор
+        ~TreeElementModel()
+        {
+            Dispose(false);
+        }
     }
 }

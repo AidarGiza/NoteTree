@@ -1,17 +1,15 @@
-﻿using NoteTree.Models;
-using System;
-using System.Collections.Generic;
+﻿using NoteTree.Interfaces;
+using NoteTree.Models;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Text;
 
 namespace NoteTree.Services
 {
     public static class DirectoriesManager
     {
-        public static ObservableCollection<TreeElementModel> GetDirectories(TreeElementModel folderElement)
+        public static ObservableCollection<ITreeElement> GetDirectories(IFileStructureElement folderElement)
         {
-            var tree = new ObservableCollection<TreeElementModel>();
+            var tree = new ObservableCollection<ITreeElement>();
             var directories = Directory.GetDirectories(folderElement.Path);
             var files = Directory.GetFiles(folderElement.Path, "*.ntn");
 
@@ -21,10 +19,10 @@ namespace NoteTree.Services
                 var newFolderElement = new TreeElementModel()
                 {
                     Path = folder,
-                    Label = name,
+                    Name = name,
                     Type = TreeElementTypeEnum.Folder,
-                    Children = new ObservableCollection<TreeElementModel>(),
-                    Parent = folderElement
+                    Children = new ObservableCollection<ITreeElement>(),
+                    Parent = folderElement as ITreeElement
                 };
 
                 tree.Add(newFolderElement);
@@ -36,9 +34,9 @@ namespace NoteTree.Services
                 var newNoteElement = new TreeElementModel()
                 {
                     Path = note,
-                    Label = name,
+                    Name = name,
                     Type = TreeElementTypeEnum.Note,
-                    Parent = folderElement
+                    Parent = folderElement as ITreeElement
                 };
 
                 tree.Add(newNoteElement);
@@ -47,9 +45,9 @@ namespace NoteTree.Services
             return tree;
         }
 
-        public static ObservableCollection<TreeElementModel> GetDirectories(string path)
+        public static ObservableCollection<ITreeElement> GetDirectories(string path)
         {
-            var tree = new ObservableCollection<TreeElementModel>();
+            var tree = new ObservableCollection<ITreeElement>();
             var directories = Directory.GetDirectories(path);
             var files = Directory.GetFiles(path, "*.ntn");
 
@@ -59,9 +57,9 @@ namespace NoteTree.Services
                 var newFolderElement = new TreeElementModel()
                 {
                     Path = folder,
-                    Label = name,
+                    Name = name,
                     Type = TreeElementTypeEnum.Folder,
-                    Children = new ObservableCollection<TreeElementModel>()
+                    Children = new ObservableCollection<ITreeElement>()
                 };
 
                 tree.Add(newFolderElement);
@@ -73,7 +71,7 @@ namespace NoteTree.Services
                 var newNoteElement = new TreeElementModel()
                 {
                     Path = note,
-                    Label = name,
+                    Name = name,
                     Type = TreeElementTypeEnum.Note
                 };
 
@@ -83,9 +81,9 @@ namespace NoteTree.Services
             return tree;
         }
 
-        public static void UpdateFolder(TreeElementModel folderElement)
+        public static void UpdateFolder(IParentElement<ITreeElement> folderElement)
         {
-            folderElement.Children = GetDirectories(folderElement);
+            folderElement.Children = GetDirectories(folderElement as IFileStructureElement);
         }
     }
 }

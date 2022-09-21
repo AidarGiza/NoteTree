@@ -17,6 +17,8 @@ namespace NoteTree.Models
 
         public static void SaveConfig(ConfigModel config)
         {
+            if (config == null) throw new ArgumentNullException("config");
+
             try
             {
                 string jsonConfig = JsonConvert.SerializeObject(config);
@@ -28,7 +30,7 @@ namespace NoteTree.Models
             }
             catch (Exception exc)
             {
-                Debug.Print($"Ошибка при сохранении: {exc?.Message}");
+                Debug.Print($"Ошибка при сохранении файла конфигурации: {exc?.Message}");
             }
         }
 
@@ -58,7 +60,7 @@ namespace NoteTree.Models
             }
             catch (Exception exc)
             {
-                Debug.Print($"Ошибка при загрузке: {exc.Message}");
+                Debug.Print($"Ошибка при загрузке файла конфигурации: {exc.Message}");
             }
             return null;
         }

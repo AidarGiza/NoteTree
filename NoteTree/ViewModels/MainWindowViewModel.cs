@@ -1,7 +1,9 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Generators;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
+using NoteTree.Interfaces;
 using NoteTree.Models;
 using NoteTree.Services;
 using NoteTree.Views;
@@ -13,13 +15,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace NoteTree.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        public ObservableCollection<TreeElementModel> TreeElements => App.DataManager?.TreeElements;
-        public ObservableCollection<TagModel> Tags => App.DataManager?.AllTags.Tags;
+        public ObservableCollection<ITreeElement> TreeElements => App.DataManager?.TreeElements;
+        public ObservableCollection<TagModel> Tags => App.DataManager?.AllTags?.Tags;
 
         public TreeElementModel SelectedTreeItem
         {
@@ -49,7 +52,7 @@ namespace NoteTree.ViewModels
         public TagModel SelectedTag
         {
             get => selectedTag;
-            set =>this.RaiseAndSetIfChanged(ref selectedTag, value, nameof(SelectedTag));
+            set => this.RaiseAndSetIfChanged(ref selectedTag, value, nameof(SelectedTag));
         }
         private TagModel selectedTag;
 
@@ -96,21 +99,33 @@ namespace NoteTree.ViewModels
 
         public MainWindowViewModel()
         {
-            if (App.Config.RootFolderPath != null)
+            if (App.Config?.RootFolderPath != null)
             {
-                App.DataManager.TreeElements = new ObservableCollection<TreeElementModel>();
+                App.DataManager.TreeElements = new ObservableCollection<ITreeElement>();
                 var name = Path.GetFileName(App.Config.RootFolderPath);
 
-                TreeElementModel rootFolder = new TreeElementModel()
+                TreeElementModel rootElement = new TreeElementModel()
                 {
                     Path = App.Config.RootFolderPath,
-                    Label = name,
-                    Children = new ObservableCollection<TreeElementModel>(),
-                    Type = TreeElementTypeEnum.Folder
+                    Name = name,
+                    Children = new ObservableCollection<ITreeElement>()
                 };
 
-                TreeElements.Add(rootFolder);
-                rootFolder.Children = DirectoriesManager.GetDirectories(rootFolder);
+                var firstLevelElements = DirectoriesManager.GetDirectories(rootElement);
+
+                foreach (var element in firstLevelElements)
+                {
+                    TreeElements.Add(element as ITreeElement);
+                    element.Children = DirectoriesManager.GetDirectories(rootElement);
+
+                }
+
+                //TreeElements.Add(rootFolder);
+                //rootFolder.Children = DirectoriesManager.GetDirectories(rootFolder);
+                //foreach (var child in rootFolder.Children)
+                //{
+                //    TreeElements.Add(child);
+                //}
 
                 App.DataManager.AllTags = TagsCollectionModel.LoadCollection(App.Config.RootFolderPath);
 
@@ -170,34 +185,43 @@ namespace NoteTree.ViewModels
             return new TextNoteModel();
         }
 
-        public async void SelectRoot()
+        public async Task<bool> SelectRoot()
         {
-            App.DataManager.TreeElements = new ObservableCollection<TreeElementModel>();
+            App.DataManager.TreeElements = new ObservableCollection<ITreeElement>();
             OpenFolderDialog openFolderDialog = new OpenFolderDialog();
             openFolderDialog.Title = "Выбор корневой директории";
             var dir = await openFolderDialog.ShowAsync(UserControl as MainWindow);
-            var name = Path.GetFileName(dir);
-
-            TreeElementModel rootFolder = new TreeElementModel()
+            if (dir != null)
             {
-                Path = dir,
-                Label = name,
-                Children = new ObservableCollection<TreeElementModel>(),
-                Type = TreeElementTypeEnum.Folder
-            };
+                var name = Path.GetFileName(dir);
 
-            TreeElements.Add(rootFolder);
-            rootFolder.Children = DirectoriesManager.GetDirectories(rootFolder);
+                RootElementModel rootFolder = new RootElementModel()
+                {
+                    Path = dir,
+                    Name = name,
+                    Children = new ObservableCollection<ITreeElement>()
+                };
 
-            App.Config.RootFolderPath = dir;
-            ConfigModel.SaveConfig(App.Config);
+                //TreeElements.Add(rootFolder);
+                rootFolder.Children = DirectoriesManager.GetDirectories(rootFolder);
+                foreach (var child in rootFolder.Children)
+                {
+                    TreeElements.Add(child as ITreeElement);
+                }
 
-            App.DataManager.AllTags = TagsCollectionModel.LoadCollection(dir);
+                App.Config.RootFolderPath = dir;
+                ConfigModel.SaveConfig(App.Config);
 
-            LoadEveryNotes();
+                App.DataManager.AllTags = TagsCollectionModel.LoadCollection(dir);
 
-            this.RaisePropertyChanged(nameof(Tags));
-            this.RaisePropertyChanged(nameof(TreeElements));
+                LoadEveryNotes();
+
+                this.RaisePropertyChanged(nameof(Tags));
+                this.RaisePropertyChanged(nameof(TreeElements));
+
+                return true;
+            }
+            else return false;
         }
 
         public void LoadEveryNotes()
@@ -299,7 +323,7 @@ namespace NoteTree.ViewModels
                 };
                 (tagCreatorWindow.DataContext as TagCreatorViewModel).UserControl = tagCreatorWindow;
                 (tagCreatorWindow.DataContext as TagCreatorViewModel).TagToEdit = tagToEdit;
-                await tagCreatorWindow.ShowDialog(App.MainWindow);
+                await tagCreatorWindow.ShowDialog((App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).MainWindow);
                 if (tagCreatorWindow.Result)
                 {
                     var notesToEdit = App.DataManager.AllNotes.Where(n => n.Tags.Any(t => t.Name == SelectedTag.Name && t.FontColorString == SelectedTag.FontColorString && t.BackgroundColorString == SelectedTag.BackgroundColorString));
@@ -312,10 +336,10 @@ namespace NoteTree.ViewModels
 
                         SaveNote(note);
                     }
-                    
+
                     SelectedTag.Name = tagToEdit.Name;
                     SelectedTag.FontColorString = tagToEdit.FontColorString;
-                    SelectedTag.BackgroundColorString = tagToEdit.BackgroundColorString;   
+                    SelectedTag.BackgroundColorString = tagToEdit.BackgroundColorString;
                 }
             }
         }
@@ -376,18 +400,34 @@ namespace NoteTree.ViewModels
             var newFolderElement = new TreeElementModel()
             {
                 Path = $"{SelectedTreeItem.Path}/{name}",
-                Label = name,
+                Name = name,
                 Type = TreeElementTypeEnum.Folder,
-                Children = new ObservableCollection<TreeElementModel>(),
+                Children = new ObservableCollection<ITreeElement>(),
                 Parent = SelectedTreeItem
             };
             SelectedTreeItem.Children.Add(newFolderElement);
             SelectedTreeItem.IsExpanded = true;
         }
 
-        public void NewTextNote()
+        private async Task<bool> CheckRootFolder()
         {
-            TreeElementModel folder = SelectedTreeItem.Type == TreeElementTypeEnum.Folder ? SelectedTreeItem : SelectedTreeItem.Parent;
+            if (App.Config.RootFolderPath == null)
+            {
+                var chooseRootFolderResult = await MessageBox.Show("Корневая папка не выбрана.\nВыбрать сейчас?", "Выбрать корневую папку?", MessageBoxButton.YesNo, MessageBoxImage.Question, UserControl as MainWindow);
+                if (chooseRootFolderResult == MessageBoxResult.Yes)
+                {
+                    return await SelectRoot();
+                }
+                return false;
+            }
+            return true;
+        }
+
+        public async void NewTextNote()
+        {
+            if (!await CheckRootFolder()) return;
+
+            TreeElementModel folder = SelectedTreeItem.Type == TreeElementTypeEnum.Folder ? SelectedTreeItem : SelectedTreeItem.Parent as TreeElementModel;
 
             if (folder != null && folder.Type == TreeElementTypeEnum.Folder)
             {
@@ -415,7 +455,7 @@ namespace NoteTree.ViewModels
                 var newNoteElement = new TreeElementModel()
                 {
                     Path = $"{folder.Path}/{name}.ntn",
-                    Label = name,
+                    Name = name,
                     Type = TreeElementTypeEnum.Note,
                     Parent = folder
                 };
@@ -424,22 +464,15 @@ namespace NoteTree.ViewModels
             }
         }
 
-        public static void WriteToBinaryFile<T>(string filePath, T objectToWrite, bool append = false)
+        public async void NewExtendedTextNote()
         {
-            using (Stream stream = File.Open(filePath, append ? FileMode.Append : FileMode.Create))
-            {
-                var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                binaryFormatter.Serialize(stream, objectToWrite);
-            }
-        }
-
-        public void NewExtendedTextNote()
-        {
+            if (!await CheckRootFolder()) return;
 
         }
 
-        public void NewCornellNote()
+        public async void NewCornellNote()
         {
+            if (!await CheckRootFolder()) return;
 
         }
 
@@ -471,14 +504,14 @@ namespace NoteTree.ViewModels
         {
             if (SelectedTreeItem != null)
             {
-                TreeElementModel nextSelected = null;
+                IParentElement<ITreeElement> nextSelected = null;
 
                 if (SelectedTreeItem.Type == TreeElementTypeEnum.Folder)
                 {
                     if (Directory.GetFileSystemEntries(SelectedTreeItem.Path).Length != 0)
                     {
-                        var df = await MessageBox.Show("Папка не пуста, удалить ее со всем содержимым?", "Удалить?", MessageBoxButton.YesNo, MessageBoxImage.Question, UserControl as MainWindow);
-                        if (df == MessageBoxResult.Yes)
+                        var deleteFolderResult = await MessageBox.Show("Папка не пуста, удалить ее со всем содержимым?", "Удалить?", MessageBoxButton.YesNo, MessageBoxImage.Question, UserControl as MainWindow);
+                        if (deleteFolderResult == MessageBoxResult.Yes)
                         {
                             Directory.Delete(SelectedTreeItem.Path, true);
                         }
@@ -505,7 +538,7 @@ namespace NoteTree.ViewModels
                         nextSelected = TreeElements.FirstOrDefault();
                     }
                 }
-                SelectedTreeItem = nextSelected;
+                SelectedTreeItem = nextSelected as TreeElementModel;
             }
             
             

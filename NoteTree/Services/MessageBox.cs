@@ -29,7 +29,6 @@ namespace NoteTree.Services
                         UserControl = view
                     };
                     viewModel.SetButtons(buttons);
-                    view.Owner = parentWindow;
                     view.DataContext = viewModel;
                     view.Result = MessageBoxResult.Cancel;
                     await view.ShowDialog(parentWindow);
@@ -55,7 +54,6 @@ namespace NoteTree.Services
                             UserControl = view
                         };
                         viewModel.SetButtons(buttons);
-                        view.Owner = parentWindow;
                         view.DataContext = viewModel;
                         view.Result = MessageBoxResult.Cancel;
                         view.ShowDialog(parentWindow);
@@ -83,7 +81,6 @@ namespace NoteTree.Services
                     UserControl = view
                 };
                 viewModel.SetButtons(buttons);
-                view.Owner = App.MainWindow;
                 view.DataContext = viewModel;
                 view.Result = MessageBoxResult.Cancel;
                 view.ShowDialog(App.MainWindow);

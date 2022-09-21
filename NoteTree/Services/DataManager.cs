@@ -1,22 +1,20 @@
-﻿using NoteTree.Models;
-using System;
-using System.Collections.Generic;
+﻿using NoteTree.Interfaces;
+using NoteTree.Models;
 using System.Collections.ObjectModel;
-using System.Text;
 
 namespace NoteTree.Services
 {
     public class DataManager
     {
-        public ObservableCollection<TreeElementModel> TreeElements;
+        public ObservableCollection<ITreeElement> TreeElements { get; set; }
 
-        public TagsCollectionModel AllTags;
+        public TagsCollectionModel AllTags { get; set; }
 
-        public ObservableCollection<NoteModelBase> AllNotes;
+        public ObservableCollection<NoteModelBase> AllNotes { get; set; }
         
         public DataManager()
         {
-            TreeElements = new ObservableCollection<TreeElementModel>();
+            TreeElements = new ObservableCollection<ITreeElement>();
         }
     }
 }
